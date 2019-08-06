@@ -1,14 +1,6 @@
 ﻿Модуль вывода форм
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-ЧТО ЕЩЕ НЕ ДОДЕЛАНО:
-
-(!!!) - модуль не отбрасывает проверку на пустое значение для тех полей, которые были необязательны к заполнению!
-
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-В том числе используется для авторизации и регистрации пользователей (не не для входа в админку)
+В том числе используется для авторизации и регистрации пользователей (но не для входа в админку)
 
 /*
 если делать вызов через общий модуль форм, то не хватает:
@@ -43,7 +35,7 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 		{
 			"name" : "login", // имя инпута - data[name]
 			"type" : "text", // тип инпута - text/password/date/email что там еще... для textarea - textarea, для button - submit
-			"verify" : "login", // тип проверки значения, используется, соответствует значения функции datavalidation
+			"verify" : "login", // тип проверки значения, используется, соответствует значениям функции datavalidation
 			"label" : "", // а это поле нужно, чтобы задать лейбл - причем лейбл в отличии от дескрипшена ставится перед инпутом, но суть та же
 			"required" : true // нужно, если это поле обязательно для заполнения
 		},
@@ -104,6 +96,9 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 Шаблон вывода ошибок подключаются через require 'elements' . DIRECTORY_SEPARATOR . 'hidden';
 
+Теперь модуль отбрасывает проверку для тех полей, которые были необязательны к заполнению и у которых пустое значение.
+Но если значение не пустое, они все равно проверяются.
+
 ======================================
 Кастомизация и обработка формы вручную
 ======================================
@@ -156,6 +151,72 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 и сообщение для кнопки отправки
 
 Поля по-умолчанию подключаются через require 'elements' . DIRECTORY_SEPARATOR . 'complete';
+
+=============================
+Кастомизация полей по шаблону
+=============================
+
+Если ваша форма имеет необычный шаблон, но поля при этом имеют абсолютно одинаковое содержание,
+их можно задать через шаблон 'template_field.php', где 'template' - имя вызываемого вами шаблона.
+
+Данные в шаблоне поля вызываются через объект $item. Например:
+$item -> name, $item -> type, $item -> required и так далее
+
+В месте вызова поля достаточно использовать функцию
+moduleFormGenerate(num, $module);
+где num - порядковый номер поля в настройках модуля,
+а $module - собственно, объект модуля, его менять не нужно
+
+Пример такой кастомизации
+
+Файл 'template.php':
+
+	<div class="form_cell">
+		<?php moduleFormGenerate(0, $module); ?>
+	</div>
+	<div class="form_cell">
+		<?php moduleFormGenerate(1, $module); ?>
+	</div>
+	<div class="row">
+		<div class="form_cell w50">
+			<?php moduleFormGenerate(2, $module); ?>
+		</div>
+		<div class="form_cell w50">
+			<?php moduleFormGenerate(3, $module); ?>
+		</div>
+		<label class="agreement_checkbox">
+			<?php $item = $module -> settings -> form; ?>
+			<input class="js_agreement_checkbox" type="<?= $item[4] -> type; ?>" value="1" name="data[<?= $item[4] -> name; ?>]" checked="">
+			<span class="personal-date-sitebar">Я даю согласие на обработку моих <a target="_blank" href="/useragreement/">персональных данных</a>.</span>
+		</label>
+	</div>
+
+Файл 'template_field.php':
+
+	<input
+		type="<?= $item -> type; ?>"
+		id="feedback-<?= $item -> name; ?>"
+		class="input_text"
+		name="data[<?= $item -> name; ?>]"
+		placeholder="<?= $item -> text; ?><?= (!empty($item -> required)) ? ' *" required aria-required="true' : ''; ?>"
+		<?= (!empty(dataobject($module -> data, $item -> name))) ? ' value="' . dataobject($module -> data, $item -> name) . '"' : '';?>
+	>
+	<div class="help-block"><?php
+		unset($module -> data['errors']['fail']);
+		if (
+			!empty($item -> name) &&
+			!empty($module -> data['errors']) &&
+			is_array($module -> data['errors']) &&
+			in_array($item -> name, $module -> data['errors'])
+		) {
+			global $lang;
+			if (dataobject($lang -> errors, $item -> name)) {
+				echo dataobject($lang -> errors, $item -> name);
+			} else {
+				echo 'Введенный текст слишком короткий или содержит недопустимые символы';
+			}
+		}
+	?></div>
 
 ==============================
 Настройка отправки уведомлений
