@@ -5,7 +5,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 ЧТО ЕЩЕ НЕ ДОДЕЛАНО:
 
 (!!!) - модуль не отбрасывает проверку на пустое значение для тех полей, которые были необязательны к заполнению!
-(!!!) - вывод ошибок сделать как элемент, чтобы не нужно было повторять его в разных кастомных формах
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -74,7 +73,6 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	<input type="text" name="check" value="" style="display:none!important;">
 
-
 Еще одно поле, без которых данные формы не будут действительными, это поле "hash". В своем шаблоне, причем это не зависит от типа формы, вы должны прописать:
 
 	<input type="hidden" name="hash" value="<?= datacrypt(time()); ?>">
@@ -103,6 +101,8 @@ vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	для русского языка: "эл.почта",
 	для английского языка: "email"
+
+Шаблон вывода ошибок подключаются через require 'elements' . DIRECTORY_SEPARATOR . 'hidden';
 
 ======================================
 Кастомизация и обработка формы вручную
