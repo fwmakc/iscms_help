@@ -1,0 +1,390 @@
+# Функции
+
+Все функции обладают понятными именами, состоящими из:
+ключевого слова, определяющего, что это функция,
+название элемента или подэлемента сайта, или условную группу операций, определяющих ее отношение
+название самой функции
+
+> funcElementSubelement_Name
+
+Примеры:
+funcData_Parse
+funcModuleForm_Generated
+
+# Переменные
+
+Есть только небольшое число разрешенных переменных:
+
+группа ключей: $key $subkey $subsubkey $sub...key => $k $sk $ssk $s...k
+группа элементов: $item $subitem $subsubitem $sub...item => $i $si $ssi $s...i
+группа наименований: $object $array => $obj $arr
+группа данных: $data
+
+Все прочие переменные обладают именами, состоящими из:
+ключевого слова, определяющего, что это переменная
+ее отношение
+ее название
+
+> vElementName
+
+В функциях разрешено отношение по текущей привязке, т.е. This или без привязки:
+
+> vThisName
+> vName
+
+Примеры:
+vDataString
+vThisTarget
+vTarget
+
+# Массивы и объекты
+
+Это те же переменные, строятся по тем же правилам, только ключевым словом является arr
+
+> arrElementName
+> arrThisName
+> arrName
+
+Примеры:
+arrDataString
+arrThisTarget
+arrTarget
+
+# Глобальные системные объекты
+
+Их немного, все они стандартизированы, запись в них, как и их замена, может привести к ошибкам в работе системы.
+
+Для пользователя они представляют собой источник данных.
+
+$lang
+$dictionary
+$template
+$router
+$module
+$query
+$system
+
+# Области видимости
+
+глобальной областью видимости для системы является
+
+> /is/
+
+Существует системная область
+
+> /is/system/
+
+В ней расположены глобальные системные объекты
+
+$template
+$router
+$system
+$query
+$lang
+$dictionary
+
+Есть также область видимости модулей, в которой работают модули
+
+> /is/modules/
+
+Еще одна область видимости - для контента, где расположены статьи, список статей или текущая статья
+
+> /is/content/
+
+Еще есть защищенная, скрытая область видимости, которая предназначена для хранения защищенных данных
+
+> /is/secure/
+
+И последняя область видимости - для администраторов, модераторов и прочих управляющих сайтом
+
+> /is/administrator/
+
+# Формат данных
+
+Все данные хранятся в формате json, незначительно доработанном и специализированном системой.
+
+Отличия:
+
+разрешены отступы строк в виде пробелов и табуляций
+разрешены переносы строк '\r', '\n' и '\r\n'
+разрешены комментарии вида '//' до конца строки
+разрешены комментарии вида '/*...*/'
+
+Внутри данных возможно разбиение на атрибуты через двоеточие.
+
+> "group:subgroup:item"
+
+Такие данные будут разобраны и представлены либо в виде:
+
+{ "group" : { "subgroup" : "item" } }
+
+Либо в виде:
+
+{ "type" : "group", "subtype" : "subgroup", "element" : "item" }
+
+Такое представление данных является понятным для пользователя и весьма удобным, например, для передачи атрибутов и аргументов.
+
+Также формат данных поддерживает текстовые переменные, вызов которых осуществляется через фигурные скобки:
+
+> {name:attribute1:attribute2:...}
+
+Поддерживается ограниченное число текстовых переменных. На данный момент это:
+
+link - для вывода ссылки
+lang - для вызова языковой переменной
+module - для вывода модуля в контенте
+page - для вызова страницы в контенте
+
+Дело в том, что по-умолчанию ссылки через тег <a> в контенте запрещены в целях безопасности и единственной возможностью
+вывода ссылок в контенте является их вызов через текстовую переменную
+
+Планируется также ввести переменные:
+
+router - для получения данных страницы
+content - для управления контентом
+date - для вывода даты
+
+Еще было бы неплохо сделать вывод через общую функцию, которая может выводить данные переменных, форматировать их (дата, телефон)
+и использовать ее как прослойку для редактирования сайта через фронтэнд
+
+# Форматы файлов
+
+Разрешенных форматов файлов всего два:
+
+- php для страниц
+- ini для данных
+
+Все страницы, включая системные и страницы шаблонов, используют расширение php.
+
+Все файлы данных имеют расширение ini.
+
+# Формат базы данных
+
+Все данные, которые хранятся в файлах формата ini, могут быть перенесены в базу данных.
+
+Все данные, которые лежат в административной папке, имеют свой раздел в бд по названию и свою структуру:
+
+> administrator/name.ini => db/name
+
+пример файла:
+
+	[administrator/structure.ini]
+	{
+		"home",
+		"about" : {
+			"news|article",
+			"faq|article",
+			"conditions|url" : "/documents/conditions/"
+		},
+		"documents" : {
+			"conditions",
+			"privacypolicy",
+			"useragreement"
+		},
+		"contacts"
+	}
+
+пример раздела бд:
+
+	[db/structure]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   home          null      null    null
+	1   about         null      null    null
+	2   news          about     article null
+	3   faq           about     article null
+	4   conditions    about     url     /documents/conditions/
+	5   documents     null      null    null
+	6   conditions    documents null    null
+	7   privacypolicy documents null    null
+	8   useragreement documents null    null
+	9   contacts      null      null    null
+
+Все остальные файлы имеют разделы, согласно папкам, в которых они лежат и простую структуру в формате json:
+
+> folder/subfolder/name.ini => db/folder
+
+пример файла:
+
+	[templates/default/settings.ini]
+	{
+		"libraries" : [
+			"jquery"
+	...
+
+пример раздела бд:
+
+	[db/templates]
+	id | name   | parent | type | data
+	------------------------------------------------------
+	0   default  null     null   {"libraries":["jquery"...
+
+пример файла:
+
+	[modules/articles/data/news.ini]
+	{
+		"page" : {
+			"topdate" : 
+	...
+
+пример раздела бд:
+
+	[db/modules]
+	id | name   | parent | type | data
+	----------------------------------------------------
+	0   news     articles null   {"page":{"topdate":"...
+
+пример файла:
+
+	[languages/ru.common.ini]
+	{
+		"morph" : {
+			"declension" : 
+	...
+
+пример раздела бд:
+
+	[db/languages]
+	id | name   | parent | type | data
+	-------------------------------------------------------
+	0   ru       null     common {"morph":{"declension":...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	[administrator/structure.ini]
+	[db/structure]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   home          null      null    null
+
+	[templates/default/settings.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	------------------------------------------------------
+	0   default  null     null   {"libraries":["jquery"...
+
+	[modules/articles/data/news.ini]
+	[db/modules]
+	id | name   | parent | type | data
+	----------------------------------------------------
+	0   news     articles null   {"page":{"topdate":"...
+
+	[languages/ru.common.ini]
+	[db/languages]
+	id | name   | parent | type | data
+	-------------------------------------------------------
+	0   ru       null     common {"morph":{"declension":...
+
+
+
+
+
+ПАПКА administrator - разбирается по особым условиям:
+	[administrator/name.ini]
+	[db/name]
+	id | name        | parent  | type  | data
+	-----------------------------------------
+	... ...           ...       ...     ...
+
+ОДИН уровень вложенности:
+
+	[folder/name.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     null     null   ...
+
+ДВА уровня вложенности:
+
+	[folder/name/type.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     null     type   ...
+
+ТРИ уровня вложенности:
+
+	[folder/parent/type/name.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     parent   type   ...
+
+	[modules/articles/data/name.ini]
+	[db/modules]
+	id | name   | parent | type | data
+	----------------------------------
+	0   articles name     data   ...
+
+	[folder/name/type/parent.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     parent   type   ...
+
+ДВОЙНОЕ ИМЯ ФАЙЛА - назначает тип и не зависти от уровней вложенности:
+
+	[folder/name.type.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     null     type   ...
+
+	[folder/name/another.type.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   name     null     type   ...
+	
+	[folder/parent/another/news.type.ini]
+	[db/folder]
+	id | name   | parent | type | data
+	----------------------------------
+	0   news     parent   type   ...
+	
+	
+
+
+	[templates/default.seo.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	------------------------------------------------------
+	0   default  null     seo    {"libraries":["jquery"...
+
+	[templates/null/null/default.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	----------------------------------------------------
+	0   default  null     null   {"page":{"topdate":"...
+
+
