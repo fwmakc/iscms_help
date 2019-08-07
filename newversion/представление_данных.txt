@@ -626,15 +626,14 @@ date - для вывода даты
 			"public" : "/"
 		},
 		"templates" : {
-			"administrator" : "administrator",
 			"base" : "base",
 			"default" : "default",
 			"errors" : "errors",
-			"restore" : "restore",
-			"personal" : "personal",
-			"private" : "private"
+			"restore" : "restore"
 		},
 		"language" : "ru",
+		"secure" : "default",
+		
 		
 	}
 	[db/libraries]
