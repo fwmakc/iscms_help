@@ -644,9 +644,32 @@ date - для вывода даты
 	1   less          null      null    {"code":"lessc.inc.php"}
 	2   datepicker    null      null    {"css":"dist/css/bootstrap-datepicker.min.css","js":"dist/js/bootstrap-datepicker.min.js","js_lang":"dist/locales/bootstrap-datepicker.{lang}.min.js"}
 
+# Проверка
 
+Проверка существования данных или положительного результата осуществляется через функцию dataset(), которая проверяет присутствие данных и возвращает true/false.
 
+Она заменяет в большинстве случаев вызов isset() и !empty(), плюс многочисленные проверки вида:
 
+if (empty($x) || $x === 0 || $x === '0')
+if (!empty($x) && is_array($x) && reset($x))
+
+и так далее. Подробнее см. в описании функции.
+
+Вызов:
+
+> if (dataset($x))
+
+Проверка данных на соответствие массиву осуществляется через функцию dataarray().
+
+Она заменяет в большинстве случаев проверки и конвертации вида:
+
+if (is_array($x) || is_object($x))
+if (is_object($x)) { $x = (array) $x; }
+
+Вызов:
+
+> if (dataarray($x))
+> if (dataarray($x)) { $x = > dataarray($x, true); }
 
 
 
