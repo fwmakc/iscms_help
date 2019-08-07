@@ -217,7 +217,7 @@ date - для вывода даты
 	[db/templates]
 	id | name   | parent | type | data
 	------------------------------------------------------
-	0   default  null     null   {"libraries":["jquery"...
+	0   settings default  null   {"libraries":["jquery"...
 
 пример файла:
 
@@ -232,7 +232,7 @@ date - для вывода даты
 	[db/modules]
 	id | name   | parent | type | data
 	----------------------------------------------------
-	0   news     articles null   {"page":{"topdate":"...
+	0   news     articles data   {"page":{"topdate":"...
 
 пример файла:
 
@@ -255,60 +255,6 @@ date - для вывода даты
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	[administrator/structure.ini]
-	[db/structure]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   home          null      null    null
-
-	[templates/default/settings.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	------------------------------------------------------
-	0   default  null     null   {"libraries":["jquery"...
-
-	[modules/articles/data/news.ini]
-	[db/modules]
-	id | name   | parent | type | data
-	----------------------------------------------------
-	0   news     articles null   {"page":{"topdate":"...
-
-	[languages/ru.common.ini]
-	[db/languages]
-	id | name   | parent | type | data
-	-------------------------------------------------------
-	0   ru       null     common {"morph":{"declension":...
-
-
-
-
-
 ПАПКА administrator - разбирается по особым условиям:
 	[administrator/name.ini]
 	[db/name]
@@ -326,11 +272,17 @@ date - для вывода даты
 
 ДВА уровня вложенности:
 
-	[folder/name/type.ini]
+	[folder/parent/name.ini]
 	[db/folder]
 	id | name   | parent | type | data
 	----------------------------------
-	0   name     null     type   ...
+	0   name     parent   ...    ...
+	
+	[templates/default/settings.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	----------------------------------
+	0   settings default  ...    ...
 
 ТРИ уровня вложенности:
 
@@ -344,7 +296,7 @@ date - для вывода даты
 	[db/modules]
 	id | name   | parent | type | data
 	----------------------------------
-	0   articles name     data   ...
+	0   name     articles data   ...
 
 	[folder/name/type/parent.ini]
 	[db/folder]
@@ -352,7 +304,7 @@ date - для вывода даты
 	----------------------------------
 	0   name     parent   type   ...
 
-ДВОЙНОЕ ИМЯ ФАЙЛА - назначает тип и не зависти от уровней вложенности:
+ДВОЙНОЕ ИМЯ ФАЙЛА - назначает тип и не зависит от уровней вложенности:
 
 	[folder/name.type.ini]
 	[db/folder]
@@ -360,31 +312,344 @@ date - для вывода даты
 	----------------------------------
 	0   name     null     type   ...
 
-	[folder/name/another.type.ini]
+	[folder/parent/name.type.ini]
 	[db/folder]
 	id | name   | parent | type | data
 	----------------------------------
-	0   name     null     type   ...
-	
+	0   name     parent   type   ...
+
 	[folder/parent/another/news.type.ini]
 	[db/folder]
 	id | name   | parent | type | data
 	----------------------------------
 	0   news     parent   type   ...
-	
-	
 
+ПРИМЕРЫ:
 
-	[templates/default.seo.ini]
+	[templates/default/settings.ini]
 	[db/templates]
 	id | name   | parent | type | data
-	------------------------------------------------------
-	0   default  null     seo    {"libraries":["jquery"...
+	----------------------------------
+	0   settings default  ...    ...
 
-	[templates/null/null/default.ini]
+	[templates/default/seo.ini]
 	[db/templates]
 	id | name   | parent | type | data
-	----------------------------------------------------
-	0   default  null     null   {"page":{"topdate":"...
+	----------------------------------
+	0   seo      default  ...    ...
+
+	[templates/default/lang/ru.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	----------------------------------
+	0   ru       default  lang   ...
+
+	[templates/default/lang/ru.common.ini]
+	[db/templates]
+	id | name   | parent | type | data
+	----------------------------------
+	0   ru       default  common ...
+
+	[modules/articles/data/news.ini]
+	[db/modules]
+	id | name   | parent | type | data
+	----------------------------------
+	0   news     articles data   ...
+
+	[modules/articles/settings.ini]
+	[db/modules]
+	id | name   | parent | type | data
+	----------------------------------
+	0   settings articles ...    ...
+
+	[articles/news/01.ini]
+	[db/articles]
+	id | name   | parent | type | data
+	----------------------------------
+	0   01       news     ...    ...
+
+	[languages/ru.common.ini]
+	[db/languages]
+	id | name   | parent | type | data
+	----------------------------------
+	0   ru       ...      common ...
+
+	[languages/ru.ini]
+	[db/languages]
+	id | name   | parent | type | data
+	----------------------------------
+	0   ru       ...      ...    ...
+
+АДМИНИСТРАТОР:
+
+	[administrator/structure.ini]
+	{
+		"home",
+		"about" : {
+			"news|article",
+			"faq|article",
+			"conditions|url" : "/documents/conditions/"
+		},
+		"documents" : {
+			"conditions",
+			"privacypolicy",
+			"useragreement"
+		},
+		"contacts"
+	}
+	[db/structure]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   home          null      null    null
+	1   about         null      null    null
+	2   news          about     article null
+	3   faq           about     article null
+	4   conditions    about     url     /documents/conditions/
+	5   documents     null      null    null
+	6   conditions    documents null    null
+	7   privacypolicy documents null    null
+	8   useragreement documents null    null
+	9   contacts      null      null    null
+
+	[administrator/administrator|personal|private.ini]
+	{
+		"administrator",
+		"langedit",
+		"filemanager",
+		"sitemap",
+		"robots"
+	}
+	[db/administrator|personal|private]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   administrator null      null    null
+	1   langedit      null      null    null
+	2   filemanager   null      null    null
+	3   sitemap       null      null    null
+	4   robots        null      null    null
+
+	[administrator/languages.ini]
+	{
+		"langs" : {
+			"ru" : ["ru", "be", "uk", "ky", "ab", "mo", "et", "lv"],
+			"en" : ["en", "de"]
+		},
+		"codes" : {
+			"ru" : "ru_RU",
+			"en" : "en_US"
+		}
+	}
+	[db/languages]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   ru            null      langs   ["ru","be","uk","ky","ab","mo","et","lv"]
+	1   en            null      langs   ["en","de"]
+	2   ru            null      codes   ru_RU
+	3   en            null      codes   en_US
+
+	[administrator/functions.ini]
+	[
+		"custom"
+	]
+	[db/functions]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   custom        null      null    null
+
+	[administrator/processor.ini]
+	{
+		"administrator" : ["settings", "language"],
+		"user" : ["restore", "activation", "deactivation", "authorisation", "registration", "cookiesagree"],
+		"forms" : ["logout", "editprofile", "changeavatar", "deleteavatar"],
+		"projects" : ["createproject", "deleteproject", "openproject", "closeproject", "lockproject"],
+		"editor" : ["savecard", "updatecard", "searchcard", "refreshcard", "saveboard"],
+		"payment" : ["payment"]
+	}
+	[db/processor]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   administrator null      null    ["settings", "language"]
+	1   user          null      null    ["restore", "activation", "deactivation", "authorisation", "registration", "cookiesagree"]
+	2   forms         null      null    ["logout", "editprofile", "changeavatar", "deleteavatar"]
+	3   projects      null      null    ["createproject", "deleteproject", "openproject", "closeproject", "lockproject"]
+	4   editor        null      null    ["savecard", "updatecard", "searchcard", "refreshcard", "saveboard"]
+	5   payment       null      null    ["payment"]
+
+	[administrator/userstable.ini]
+	{
+		"id" : {
+			"secure" : true,
+			"readonly" : true
+		},
+		"login" : {
+			"type" : "",
+			"validation" : "",
+			"unique" : true,
+			"required" : true,
+			"authorise" : true,
+			"secure" : true,
+			"crypt" : false,
+			"readonly" : true
+		},
+		"password" : {
+			"secure" : true,
+			"crypt" : "password"
+		},
+		"status" : {
+			"secure" : true
+		},
+		"data" : {
+		},
+		"email" : {
+		},
+		"phone" : {
+			"type" : "numeric",
+			"validation" : "email",
+			"unique" : true,
+			"required" : false,
+			"authorise" : true,
+			"secure" : false,
+			"crypt" : true,
+			"readonly" : false
+		},
+		"birthday" : {
+			"type" : "date",
+			"validation" : "date",
+			"unique" : false,
+			"required" : false,
+			"authorise" : false,
+			"secure" : false,
+			"crypt" : false,
+			"readonly" : false
+		},
+		"register" : {
+			"type" : "date",
+			"validation" : "email",
+			"unique" : false,
+			"required" : false,
+			"authorise" : false,
+			"secure" : false,
+			"crypt" : false,
+			"readonly" : false
+		},
+		"lastvisit" : {
+			"type" : "date",
+			"validation" : "email",
+			"unique" : false,
+			"required" : false,
+			"authorise" : false,
+			"secure" : false,
+			"crypt" : false,
+			"readonly" : true
+		}
+	}
+	[db/userstable]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   id            null      null    {"secure":true,"readonly":true}
+	1   login         null      null    {"type":"","validation":"","unique":true,"required":true,"authorise":true,"secure":true,"crypt":false,"readonly":true}
+	2   password      null      null    {"secure":true,"crypt":"password"}
+	3   status        null      null    {"secure":true}
+	4   data          null      null    {}
+	5   email         null      null    {}
+	6   phone         null      null    {"type":"numeric","validation":"email","unique":true,"required":false,"authorise":true,"secure":false,"crypt":true,"readonly":false}
+	7   birthday      null      null    {"type":"date","validation":"date","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":false}
+	8   register      null      null    {"type":"date","validation":"email","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":false}
+	9   lastvisit     null      null    {"type":"date","validation":"email","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":true}
+
+	[administrator/users.csv]
+	id,login,password,status,register,data,email,phone,birthday,lastvisit
+	1549969549005126,lirasitemaster,$2y$10$dfV6Yp8RS35Sq9Yh3gCHyeCZkAmWzyptj.PjWsR0mVhSEfzpb6u76,100,,,lirasitemaster@yandex.ru,,,
+	1549969569008193,admin,$2y$10$blgS4VJypGq4QMrkFFQaZ.Btnk9ushGDa1Sit43Pp4OMnR73g1a/q,100,,,admin@mail.com,,,
+	1549969619001121,user,$2y$10$ObdUWuLuFP/4rXjVCvNj8efclRi730Xaz4Tl.TB52Y/Ko2jx76uNy,,,,user@mail.com,,,
+	[db/users]
+	id | name           | parent  | type  | data
+	----------------------------------------------------------
+	0   1549969549005126 null      null    {"id":"1549969549005126","login":"lirasitemaster","password":"$2y$10$dfV6Yp8RS35Sq9Yh3gCHyeCZkAmWzyptj.PjWsR0mVhSEfzpb6u76","status":"100","register":"","data":"","email":"lirasitemaster@yandex.ru","phone":"","birthday":"","lastvisit":""}
+	1   1549969569008193 null      null    {"id":"1549969569008193","login":"admin","password":"$2y$10$blgS4VJypGq4QMrkFFQaZ.Btnk9ushGDa1Sit43Pp4OMnR73g1a/q","status":"100","register":"","data":"","email":"admin@mail.com","phone":"","birthday":"","lastvisit":""}
+	2   1549969619001121 null      null    {"id":"1549969619001121","login":"user","password":"$2y$10$ObdUWuLuFP/4rXjVCvNj8efclRi730Xaz4Tl.TB52Y/Ko2jx76uNy","status":"","register":"","data":"","email":"user@mail.com","phone":"","birthday":"","lastvisit":""}
+
+	[administrator/libraries.ini]
+	{
+		"bootstrap" : {
+			"css" : "css/bootstrap.min.css",
+			"css_cdn" : "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
+			"js" : "js/bootstrap.bundle.min.js",
+			"js_cdn" : "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
+		},
+		"less" : {
+			"code" : "lessc.inc.php"
+		},
+		"datepicker" : {
+			"css" : "dist/css/bootstrap-datepicker.min.css",
+			"js" : "dist/js/bootstrap-datepicker.min.js",
+			"js_lang" : "dist/locales/bootstrap-datepicker.{lang}.min.js"
+		}
+	}
+	[db/libraries]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   bootstrap     null      null    {"css":"css/bootstrap.min.css","css_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css","js":"js/bootstrap.bundle.min.js","js_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"}
+	1   less          null      null    {"code":"lessc.inc.php"}
+	2   datepicker    null      null    {"css":"dist/css/bootstrap-datepicker.min.css","js":"dist/js/bootstrap-datepicker.min.js","js_lang":"dist/locales/bootstrap-datepicker.{lang}.min.js"}
+
+	[administrator/configuration.ini]
+	{
+		"db" : {
+			"type" : "nodb",
+			"host" : "localhost",
+			"user" : "root",
+			"pass" : "",
+			"name" : "site_db",
+			"prefix" : "is"
+		},		
+		"name" : {
+			"administrator" : "administrator",
+			"articles" : "articles",
+			"cache" : "cache",
+			"core" : "includes",
+			"install" : "install",
+			"libraries" : "libraries",
+			"modules" : "modules",
+			"templates" : "templates",
+			"public" : "media"
+		},
+		"path" : {
+			"administrator" : "/",
+			"articles" : "/",
+			"cache" : "/",
+			"core" : "/",
+			"install" : "/",
+			"libraries" : "/",
+			"modules" : "/",
+			"templates" : "/",
+			"public" : "/"
+		},
+		"templates" : {
+			"administrator" : "administrator",
+			"base" : "base",
+			"default" : "default",
+			"errors" : "errors",
+			"restore" : "restore",
+			"personal" : "personal",
+			"private" : "private"
+		},
+		"language" : "ru",
+		
+	}
+	[db/libraries]
+	id | name        | parent  | type  | data
+	----------------------------------------------------------
+	0   bootstrap     null      null    {"css":"css/bootstrap.min.css","css_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css","js":"js/bootstrap.bundle.min.js","js_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"}
+	1   less          null      null    {"code":"lessc.inc.php"}
+	2   datepicker    null      null    {"css":"dist/css/bootstrap-datepicker.min.css","js":"dist/js/bootstrap-datepicker.min.js","js_lang":"dist/locales/bootstrap-datepicker.{lang}.min.js"}
+
+
+
+
+
+
+
+
 
 
