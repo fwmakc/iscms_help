@@ -34,3 +34,21 @@
 	echo $l;
 	exit;
 ?>
+
+# Модули
+
+module
+name
+template
+settings
+this
+
+При создании модуля, создаются также все элементы, которые перечислены в массиве elements настоек модуля
+
+elements : {
+  name : tag:id:classes:attr
+}
+
+base : div::base_main:data-number 0 data-target block_home
+
+<div class="base_main" data-number="0" data-target="block_home">
