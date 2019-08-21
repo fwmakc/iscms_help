@@ -46,9 +46,13 @@ this
 При создании модуля, создаются также все элементы, которые перечислены в массиве elements настоек модуля
 
 elements : {
-  name : tag:id:classes:attr
+  name : tag:id:classes:data:area:attr
 }
 
-base : div::base_main:data-number 0 data-target block_home
+base : div::base_main:number 0 target block_home
 
 <div class="base_main" data-number="0" data-target="block_home">
+
+Для этого нужно править класс html и пропускать только разрешенные теги и атрибуты, а еще править значения по clear alphanumeric/default
+
+Еще нужно сделать возможность добавлять классы, айди и атрибуты через этот же класс
