@@ -1,0 +1,15 @@
+# Константы
+
+для NAME_* и PATH_*
+
+новые / старые
+
+BASE + ROOT_PATH - ADMINISTRATOR
+CONTENT - ARTICLES
+CORE - INCLUDES
+LANGUAGES - ...
+LOCAL - UPLOAD
+LOG - ...
+[удалены] - NAME_PERSONAL + NAME_PRIVATE
+
+остальные остались так же
