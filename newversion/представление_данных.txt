@@ -220,13 +220,19 @@ $url
 
 > "group:subgroup:item"
 
-Такие данные будут разобраны и представлены либо в виде:
+Такие данные будут разобраны и представлены в виде:
 
-{ "group" : { "subgroup" : "item" } }
+{ "group" : [ "subgroup", "item" ] }
 
-Либо в виде:
+Возможно перечисление через запятые, точки с запятыми и пробелы:
 
-{ "type" : "group", "subtype" : "subgroup", "element" : "item" }
+> "group:subgroup1:subgroup2,item:subitem1:subitem2"
+> "group:subgroup1:subgroup2;item:subitem1:subitem2"
+> "group:subgroup1:subgroup2 item:subitem1:subitem2"
+
+Такие данные будут разобраны и представлены в виде:
+
+{ "group" : [ "subgroup1", "subgroup2" ], "item" : [ "subitem1", "subitem2" ] }
 
 Такое представление данных является понятным для пользователя и весьма удобным, например, для передачи атрибутов и аргументов.
 
