@@ -302,27 +302,11 @@ date - для вывода даты
 
 Все файлы данных имеют расширение ini.
 
-# Формат базы данных - новый
+# Формат базы данных
 
-Существует два типа базы данных:
+Поля базы данных представлены следующими колонками:
 
-	локальная
-	удаленная
-
-Локальная база данных представлена папками и файлами с расширением ini, в которых записаны данные в формате json.
-
-Все данные, которые хранятся в файлах формата ini, соответствуют данным в базе данных и могут быть перенесены из одного типа в другой.
-
-База данных, грубо говоря, делится на разделы трех типов.
-
-1. Настройки сайта
-2. Общие данные
-3. Контент
-
-Настройки сайта представлены 8-ю колонками:
-
-	id | name | type | parent | ctime | mtime | rights | data
-	id | name | data
+	id | name | type | parent | ctime | mtime | self | data
 
 	id - необязательно для файла, но обязательно для таблицы
 	name - соответствует имени файла с расширением ini
@@ -330,575 +314,52 @@ date - для вывода даты
 	parent - родитель, к какому семейству относится эта запись, в случае локальной базы данных, это - название родительской папки
 	ctime - время создания записи
 	mtime - время последнего изменения записи
-	rights - права, в основном это поле содержит идентификаторы пользователей, которые являются авторами или последними, кто вносил изменения
+	self - это поле содержит идентификаторы пользователей, которые являются авторами или последними, кто вносил изменения
 	data - данные в формате json
 
-Настройки сайта находятся в корне папки локальной базы данных. Название файла соответствует названию раздела, ключи главных массивов - названиям записей, а их содержимое - данным.
+Отдельно стоит обратить внимание на то, что поля 'parent' и 'self' читаются как массив, что позволяет им хранить несколько значений. Так, для поля 'parent' это позволяет отследить всех родителей по всей глубине вложенности, а для поля 'self' это позволяет назначить нескольких владельцев.
 
-	[db/file.ini]
+Работа с базой данных осуществляется через функцию dbUse. Для каждого типа базы данных используется одинаковый формат вызова этой функции.
+
+Непосредственно за работу функции отвечает драйвер. Это файл, в котором функция dbUse обращается непосредственно к базе данных и осуществляет определенные операции. Таким образом драйвер отвечает за работу с базой данных, проверку разрешений и прочее.
+
+Локальная база данных представлена папками и файлами с расширением ini, в которых записаны данные в формате json. Все данные, которые хранятся в этиъ файлах, соответствуют данным в базе данных и могут быть перенесены из одного типа в другой.
+
+Локальная база данных типизирована. Файлы могут быть двух видов:
+
+	- файл строки (одна запись из раздела базы данных)
+	- файл раздела (несколько записей, являющиеся разделом базы данных)
+
+В содержимом файла параметры всегда разделяются через знак двоеточие ":". Однако значения полей также могут передаваться в имени файла. Так как имя файла не может содержать двоеточие, такие значения разделяются через знак точки "."
+
+Например, для файла строки в локальной базе данных, имя файла и его расположение в файловой системе на сервере будут прочитаны следующим образом:
+
+	/database/(parent/)(id.)name(.type.self1 self2)[.ext]
+
+Значение полей ctime и mtime берутся из информации о файле, а значение поля data - это содержимое файла в формате json.
+
+Если файл является файлом раздела, то здесь будут различия.
+
+Файл раздела имеет следующее название:
+
+	/database/name[.ext]
+
+Содержимое представляет собой такую структуру:
+
 	{
-		"one" : ...
-	}
-	
-	[db: file]
-	id | name | data
-	0    one    ...
-
-К настройкам сайта относятся следующие файлы:
-
-	langcodes.ini
-	functions.ini
-	processor.ini
-	userstable.ini
-
-Общие данные также представлены тремя колонками.
-
-Общие данные собраны в разделы, соответствующие названиям папок, а записи представлены файлами.
-
-	[db/folder/id.file.ini]
-	{
+		"(id:)name(.parent)(:type:self1 self2)" : { data },
 		...
 	}
 	
-	[db: folder]
-	id | name | data
-	0    file   ...
+Как видите, это по-прежнему файл данных в формате json. Однако теперь значения полей, которые раньше были в имени файла, теперь перенесена в ключ. А значение поля data является содержимым данных с этим ключом.
 
-Для хранения данных используется несколько типов.
+Обратите внимание на то, что родитель должен быть разделен не двоеточием, а точкой.
 
-Вызов как настроек сайта, так и общих данных осуществляется через функцию
-
-	dbSelect($db, $name)
-	db - название раздела базы данных (а также папки или файла для локальной версии)
-	name - название нужной строки
-
-На выходе функция возвращает массив. Если пропустить второй параметр, то будут прочитаны все строки.
-
-
-
-
-
-
-
-
-
-
-
-Структура сайта - это раздел с общими данными.
-
-Если имя файла содержит точку, то все, что до этой точки, воспринимается как id:
-
-
-
-
-# Формат базы данных
-
-Все данные, которые хранятся в файлах формата ini, могут быть перенесены в базу данных.
-
-Все данные, которые лежат в административной папке, имеют свой раздел в бд по названию и свою структуру:
-
-> administrator/name.ini => db/name
-
-пример файла:
-
-	[administrator/structure.ini]
-	{
-		"home",
-		"about" : {
-			"news|article",
-			"faq|article",
-			"conditions|url" : "/documents/conditions/"
-		},
-		"documents" : {
-			"conditions",
-			"privacypolicy",
-			"useragreement"
-		},
-		"contacts"
-	}
-
-пример раздела бд:
-
-	[db/structure]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   home          null      null    null
-	1   about         null      null    null
-	2   news          about     article null
-	3   faq           about     article null
-	4   conditions    about     url     /documents/conditions/
-	5   documents     null      null    null
-	6   conditions    documents null    null
-	7   privacypolicy documents null    null
-	8   useragreement documents null    null
-	9   contacts      null      null    null
-
-Все остальные файлы имеют разделы, согласно папкам, в которых они лежат и простую структуру в формате json:
-
-> folder/subfolder/name.ini => db/folder
-
-пример файла:
-
-	[templates/default/settings.ini]
-	{
-		"libraries" : [
-			"jquery"
-	...
-
-пример раздела бд:
-
-	[db/templates]
-	id | name   | parent | type | data
-	------------------------------------------------------
-	0   settings default  null   {"libraries":["jquery"...
-
-пример файла:
-
-	[modules/articles/data/news.ini]
-	{
-		"page" : {
-			"topdate" : 
-	...
-
-пример раздела бд:
-
-	[db/modules]
-	id | name   | parent | type | data
-	----------------------------------------------------
-	0   news     articles data   {"page":{"topdate":"...
-
-пример файла:
-
-	[languages/ru.common.ini]
-	{
-		"morph" : {
-			"declension" : 
-	...
-
-пример раздела бд:
-
-	[db/languages]
-	id | name   | parent | type | data
-	-------------------------------------------------------
-	0   ru       null     common {"morph":{"declension":...
-
-
-
-
-
-
-
-ПАПКА administrator - разбирается по особым условиям:
-	[administrator/name.ini]
-	[db/name]
-	id | name        | parent  | type  | data
-	-----------------------------------------
-	... ...           ...       ...     ...
-
-ОДИН уровень вложенности:
-
-	[folder/name.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     null     null   ...
-
-ДВА уровня вложенности:
-
-	[folder/parent/name.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     parent   ...    ...
-	
-	[templates/default/settings.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	----------------------------------
-	0   settings default  ...    ...
-
-ТРИ уровня вложенности:
-
-	[folder/parent/type/name.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     parent   type   ...
-
-	[modules/articles/data/name.ini]
-	[db/modules]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     articles data   ...
-
-	[folder/name/type/parent.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     parent   type   ...
-
-ДВОЙНОЕ ИМЯ ФАЙЛА - назначает тип и не зависит от уровней вложенности:
-
-	[folder/name.type.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     null     type   ...
-
-	[folder/parent/name.type.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   name     parent   type   ...
-
-	[folder/parent/another/news.type.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	0   news     parent   type   ...
-
-ПРИМЕРЫ:
-
-	[templates/default/settings.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	----------------------------------
-	0   settings default  ...    ...
-
-	[templates/default/seo.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	----------------------------------
-	0   seo      default  ...    ...
-
-	[templates/default/lang/ru.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	----------------------------------
-	0   ru       default  lang   ...
-
-	[templates/default/lang/ru.common.ini]
-	[db/templates]
-	id | name   | parent | type | data
-	----------------------------------
-	0   ru       default  common ...
-
-	[modules/articles/data/news.ini]
-	[db/modules]
-	id | name   | parent | type | data
-	----------------------------------
-	0   news     articles data   ...
-
-	[modules/articles/settings.ini]
-	[db/modules]
-	id | name   | parent | type | data
-	----------------------------------
-	0   settings articles ...    ...
-
-	[articles/news/01.ini]
-	[db/articles]
-	id | name   | parent | type | data
-	----------------------------------
-	0   01       news     ...    ...
-
-	[languages/ru.common.ini]
-	[db/languages]
-	id | name   | parent | type | data
-	----------------------------------
-	0   ru       ...      common ...
-
-	[languages/ru.ini]
-	[db/languages]
-	id | name   | parent | type | data
-	----------------------------------
-	0   ru       ...      ...    ...
-
-Если файл имеет впереди ЧИСЛОВОЙ ИНДЕКС, то он назначает id:
-
-	[folder/01.name.type.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	1   name     null     type   ...
-	
-Если имя файла целиком содержит ЧИСЛОВОЙ ИНДЕКС, то он дублируется и в название, и в id:
-
-	[folder/01.ini]
-	[db/folder]
-	id | name   | parent | type | data
-	----------------------------------
-	1   01       null     null   ...
-
-ЧИСЛОВОЙ ИНДЕКС в id всегда преобразуется в целое число:
-
-	1 > 1, 01 > 1, 001 > 1 и т.д.
-
-АДМИНИСТРАТОР:
-
-	[administrator/structure.ini]
-	{
-		"home",
-		"about" : {
-			"news|article",
-			"faq|article",
-			"conditions|url" : "/documents/conditions/"
-		},
-		"documents" : {
-			"conditions",
-			"privacypolicy",
-			"useragreement"
-		},
-		"contacts"
-	}
-	[db/structure]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   home          null      null    null
-	1   about         null      null    null
-	2   news          about     article null
-	3   faq           about     article null
-	4   conditions    about     url     /documents/conditions/
-	5   documents     null      null    null
-	6   conditions    documents null    null
-	7   privacypolicy documents null    null
-	8   useragreement documents null    null
-	9   contacts      null      null    null
-
-	[administrator/administrator|personal|private.ini]
-	{
-		"administrator",
-		"langedit",
-		"filemanager",
-		"sitemap",
-		"robots"
-	}
-	[db/administrator|personal|private]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   administrator null      null    null
-	1   langedit      null      null    null
-	2   filemanager   null      null    null
-	3   sitemap       null      null    null
-	4   robots        null      null    null
-
-	[administrator/languages.ini]
-	{
-		"langs" : {
-			"ru" : ["ru", "be", "uk", "ky", "ab", "mo", "et", "lv"],
-			"en" : ["en", "de"]
-		},
-		"codes" : {
-			"ru" : "ru_RU",
-			"en" : "en_US"
-		}
-	}
-	[db/languages]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   ru            null      langs   ["ru","be","uk","ky","ab","mo","et","lv"]
-	1   en            null      langs   ["en","de"]
-	2   ru            null      codes   ru_RU
-	3   en            null      codes   en_US
-
-	[administrator/functions.ini]
-	[
-		"custom"
-	]
-	[db/functions]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   custom        null      null    null
-
-	[administrator/processor.ini]
-	{
-		"administrator" : ["settings", "language"],
-		"user" : ["restore", "activation", "deactivation", "authorisation", "registration", "cookiesagree"],
-		"forms" : ["logout", "editprofile", "changeavatar", "deleteavatar"],
-		"projects" : ["createproject", "deleteproject", "openproject", "closeproject", "lockproject"],
-		"editor" : ["savecard", "updatecard", "searchcard", "refreshcard", "saveboard"],
-		"payment" : ["payment"]
-	}
-	[db/processor]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   administrator null      null    ["settings", "language"]
-	1   user          null      null    ["restore", "activation", "deactivation", "authorisation", "registration", "cookiesagree"]
-	2   forms         null      null    ["logout", "editprofile", "changeavatar", "deleteavatar"]
-	3   projects      null      null    ["createproject", "deleteproject", "openproject", "closeproject", "lockproject"]
-	4   editor        null      null    ["savecard", "updatecard", "searchcard", "refreshcard", "saveboard"]
-	5   payment       null      null    ["payment"]
-
-	[administrator/userstable.ini]
-	{
-		"id" : {
-			"secure" : true,
-			"readonly" : true
-		},
-		"login" : {
-			"type" : "",
-			"validation" : "",
-			"unique" : true,
-			"required" : true,
-			"authorise" : true,
-			"secure" : true,
-			"crypt" : false,
-			"readonly" : true
-		},
-		"password" : {
-			"secure" : true,
-			"crypt" : "password"
-		},
-		"status" : {
-			"secure" : true
-		},
-		"data" : {
-		},
-		"email" : {
-		},
-		"phone" : {
-			"type" : "numeric",
-			"validation" : "email",
-			"unique" : true,
-			"required" : false,
-			"authorise" : true,
-			"secure" : false,
-			"crypt" : true,
-			"readonly" : false
-		},
-		"birthday" : {
-			"type" : "date",
-			"validation" : "date",
-			"unique" : false,
-			"required" : false,
-			"authorise" : false,
-			"secure" : false,
-			"crypt" : false,
-			"readonly" : false
-		},
-		"register" : {
-			"type" : "date",
-			"validation" : "email",
-			"unique" : false,
-			"required" : false,
-			"authorise" : false,
-			"secure" : false,
-			"crypt" : false,
-			"readonly" : false
-		},
-		"lastvisit" : {
-			"type" : "date",
-			"validation" : "email",
-			"unique" : false,
-			"required" : false,
-			"authorise" : false,
-			"secure" : false,
-			"crypt" : false,
-			"readonly" : true
-		}
-	}
-	[db/userstable]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   id            null      null    {"secure":true,"readonly":true}
-	1   login         null      null    {"type":"","validation":"","unique":true,"required":true,"authorise":true,"secure":true,"crypt":false,"readonly":true}
-	2   password      null      null    {"secure":true,"crypt":"password"}
-	3   status        null      null    {"secure":true}
-	4   data          null      null    {}
-	5   email         null      null    {}
-	6   phone         null      null    {"type":"numeric","validation":"email","unique":true,"required":false,"authorise":true,"secure":false,"crypt":true,"readonly":false}
-	7   birthday      null      null    {"type":"date","validation":"date","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":false}
-	8   register      null      null    {"type":"date","validation":"email","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":false}
-	9   lastvisit     null      null    {"type":"date","validation":"email","unique":false,"required":false,"authorise":false,"secure":false,"crypt":false,"readonly":true}
-
-	[administrator/users.csv]
-	id,login,password,status,register,data,email,phone,birthday,lastvisit
-	1549969549005126,lirasitemaster,$2y$10$dfV6Yp8RS35Sq9Yh3gCHyeCZkAmWzyptj.PjWsR0mVhSEfzpb6u76,100,,,lirasitemaster@yandex.ru,,,
-	1549969569008193,admin,$2y$10$blgS4VJypGq4QMrkFFQaZ.Btnk9ushGDa1Sit43Pp4OMnR73g1a/q,100,,,admin@mail.com,,,
-	1549969619001121,user,$2y$10$ObdUWuLuFP/4rXjVCvNj8efclRi730Xaz4Tl.TB52Y/Ko2jx76uNy,,,,user@mail.com,,,
-	[db/users]
-	id | name           | parent  | type  | data
-	----------------------------------------------------------
-	0   1549969549005126 null      null    {"id":"1549969549005126","login":"lirasitemaster","password":"$2y$10$dfV6Yp8RS35Sq9Yh3gCHyeCZkAmWzyptj.PjWsR0mVhSEfzpb6u76","status":"100","register":"","data":"","email":"lirasitemaster@yandex.ru","phone":"","birthday":"","lastvisit":""}
-	1   1549969569008193 null      null    {"id":"1549969569008193","login":"admin","password":"$2y$10$blgS4VJypGq4QMrkFFQaZ.Btnk9ushGDa1Sit43Pp4OMnR73g1a/q","status":"100","register":"","data":"","email":"admin@mail.com","phone":"","birthday":"","lastvisit":""}
-	2   1549969619001121 null      null    {"id":"1549969619001121","login":"user","password":"$2y$10$ObdUWuLuFP/4rXjVCvNj8efclRi730Xaz4Tl.TB52Y/Ko2jx76uNy","status":"","register":"","data":"","email":"user@mail.com","phone":"","birthday":"","lastvisit":""}
-
-	[administrator/libraries.ini]
-	{
-		"bootstrap" : {
-			"css" : "css/bootstrap.min.css",
-			"css_cdn" : "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css",
-			"js" : "js/bootstrap.bundle.min.js",
-			"js_cdn" : "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
-		},
-		"less" : {
-			"code" : "lessc.inc.php"
-		},
-		"datepicker" : {
-			"css" : "dist/css/bootstrap-datepicker.min.css",
-			"js" : "dist/js/bootstrap-datepicker.min.js",
-			"js_lang" : "dist/locales/bootstrap-datepicker.{lang}.min.js"
-		}
-	}
-	[db/libraries]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   bootstrap     null      null    {"css":"css/bootstrap.min.css","css_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css","js":"js/bootstrap.bundle.min.js","js_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"}
-	1   less          null      null    {"code":"lessc.inc.php"}
-	2   datepicker    null      null    {"css":"dist/css/bootstrap-datepicker.min.css","js":"dist/js/bootstrap-datepicker.min.js","js_lang":"dist/locales/bootstrap-datepicker.{lang}.min.js"}
-
-	[administrator/configuration.ini]
-	{
-		"db" : {
-			"type" : "nodb",
-			"host" : "localhost",
-			"user" : "root",
-			"pass" : "",
-			"name" : "site_db",
-			"prefix" : "is"
-		},		
-		"name" : {
-			"administrator" : "administrator",
-			"articles" : "articles",
-			"cache" : "cache",
-			"core" : "includes",
-			"install" : "install",
-			"libraries" : "libraries",
-			"modules" : "modules",
-			"templates" : "templates",
-			"public" : "media"
-		},
-		"path" : {
-			"administrator" : "/",
-			"articles" : "/",
-			"cache" : "/",
-			"core" : "/",
-			"install" : "/",
-			"libraries" : "/",
-			"modules" : "/",
-			"templates" : "/",
-			"public" : "/"
-		},
-		"templates" : {
-			"base" : "base",
-			"default" : "default",
-			"errors" : "errors",
-			"restore" : "restore"
-		},
-		"language" : "ru",
-		"secure" : "default",
-		
-		
-	}
-	[db/libraries]
-	id | name        | parent  | type  | data
-	----------------------------------------------------------
-	0   bootstrap     null      null    {"css":"css/bootstrap.min.css","css_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css","js":"js/bootstrap.bundle.min.js","js_cdn":"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"}
-	1   less          null      null    {"code":"lessc.inc.php"}
-	2   datepicker    null      null    {"css":"dist/css/bootstrap-datepicker.min.css","js":"dist/js/bootstrap-datepicker.min.js","js_lang":"dist/locales/bootstrap-datepicker.{lang}.min.js"}
+Значение полей ctime и mtime по-прежнему берутся из информации о файле.
 
 # Проверка
 
-Проверка существования данных или положительного результата осуществляется через функцию dataset(), которая проверяет присутствие данных и возвращает true/false.
+Проверка существования данных или положительного результата осуществляется через функцию set(), которая проверяет присутствие данных и возвращает true/false.
 
 Она заменяет в большинстве случаев вызов isset() и !empty(), плюс многочисленные проверки вида:
 
