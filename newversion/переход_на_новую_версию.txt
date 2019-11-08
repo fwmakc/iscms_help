@@ -13,3 +13,12 @@ LOG - ...
 [удалены] - NAME_PERSONAL + NAME_PRIVATE
 
 остальные остались так же
+
+
+
+Опции шаблона
+
+были в template -> options стали в template -> settings -> options
+
+	develop - не используется, теперь это константа
+	mobiledetect - теперь device
