@@ -95,7 +95,7 @@
 
 Эта запись идентична такой записи в таблице:
 
-	id | name  | type | parent | cdate | mdate | self | data
+	id | name  | type | parent | ctime | mtime | self | data
 	0    login                                          { "type" : "", "validation" : "", "unique" : true, "required" : true, "authorise" : true, "secure" : true, "crypt" : false, "readonly" : true }
 
 Значит, у пользователя в данных должно быть поле "login", оно обязательное, уникальное (т.е. не повторяющаяся у других), его тип - по-умолчанию, без проверки, оно используется для авторизации, оно защищено, не закриптовано и только для чтения
@@ -104,12 +104,12 @@
 
 Дополнительные системные поля:
 
-	cdate - дата создания, в абсолютном формате
-	mdate - дата последнего изменения, в абсолютном формате
+	ctime - дата создания, в абсолютном формате
+	mtime - дата последнего изменения, в абсолютном формате
 	self - список допустимых пользователей
 	parent - список родителей
 
-/parent/id.name.type.self[.ext] + create_date + modify_date + data
+/parent/id.name.type.self[.ext] + create_time + modify_time + data
 
 # Права пользователей и группы прав
 
