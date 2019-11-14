@@ -16,7 +16,9 @@ LOG - ...
 
 
 
+===
 Опции шаблона
+===
 
 были в template -> options стали в template -> settings -> options
 
@@ -47,3 +49,61 @@ page($name, $target = 'inner')
 thispage($target, $second)
 	'article' теперь 'content'
 	'articlename' теперь 'contentname'
+
+===
+Параметры объекта шаблона
+===
+
+$template -> router -> parameters --- $template -> page['parameters']
+а проверка empty($template -> router -> parameters -> article) --- empty($content)
+
+$template -> router -> page --- $template -> page['name']
+
+$template -> url теперь не существует, все урлы хранятся в объекте $uri
+$template -> url --- $uri -> scheme . '://' . $uri -> host . $uri -> path -> base
+*для облегчения теперь --- $uri -> site и это безо всяких проверок на язык, слешей в конце и прочего
+
+===
+Языковой объект
+===
+
+Проверки языков теперь почти не требуется. На крайний случай же добавлена функция thislang.
+
+Константа ROOT_LANG заменена на DEFAULT_LANG, вместо значения auto теперь true. Но проверять лучше либо через функцию, либо через пустой $lang
+
+Вызов языкового элемента теперь через функцию:
+	$lang -> ... --- lang('...')
+Также эта функция поддерживает проверку:
+	!empty/isset($lang -> ...) --- lang('...', 'is')
+Если вам нужно просто взять значение (например, вы выводите элемент в echo), то используйте false:
+	echo $lang -> ... --- echo lang('...', false)
+	$var = $lang -> ... --- $var = lang('...', false)
+Глубина задается через двоеточия:
+	$lang -> name -> subname --- lang('name:subname')
+
+===
+Параметры объекта модуля
+===
+
+$module -> settings -> ... --- теперь $module -> settings[...]
+
+регулярка:
+!ВНИМАНИЕ с этими регулярками нужно быть внимательными, т.к. они иногда захватывают больше, чем надо
+
+1.
+\$module -> settings -> (\w+)?([^\w])
+$module -> settings['$1']$2
+
+2.
+\$module -> settings\['([a-z\s\-\>]+)?('\] -> )(\w+)?([^\w])
+$module -> settings['$1']['$3']$4
+
+===
+Структура
+===
+
+"home" --- "home:home" (обязательно, даже если еще пока работает старый!)
+"name|url" : "/path/to/page/" --- "name:url:path.to.page"
+"name|article" --- "name:content"
+"name|..." --- "name:..."
+
