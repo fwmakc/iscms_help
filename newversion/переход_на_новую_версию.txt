@@ -55,7 +55,7 @@ thispage($target, $second)
 ===
 
 $template -> router -> parameters --- $template -> page['parameters']
-а проверка empty($template -> router -> parameters -> article) --- empty($content)
+а проверка empty($template -> router -> parameters -> article) --- empty($content) / !set($content) - лучше, т.к. возвращает false с пустых объектов
 
 $template -> router -> page --- $template -> page['name']
 
