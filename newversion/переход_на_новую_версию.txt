@@ -54,12 +54,100 @@ thispage($target, $second)
 Параметры объекта шаблона
 ===
 
-$template -> router -> parameters --- $template -> page['parameters']
-а проверка empty($template -> router -> parameters -> article) --- empty($content) / !set($content) - лучше, т.к. возвращает false с пустых объектов
+$template -> site ($_SERVER["SERVER_NAME"]) --- $uri -> host
+$template -> url --- $uri -> site
+
+$template -> lang --- $lang -> lang
+$template -> langcode --- $lang -> code
+$template -> langs --- $lang -> list
+
+$template -> router:
+
+например, для http://0hp.ru/rooms/apartments/
+[router] => Object(
+	[types] => Array(
+		[rooms] => article
+	)
+	[folders] => Array(
+	)
+	[page] => rooms
+	[parameters] => Object(
+		[article] => apartments
+	)
+)
+
+например, для http://0hp.ru/about/news/newyearnight/
+[router] => Object(
+	[types] => Array(
+		[about] => 
+		[news] => article
+	)
+	[folders] => Array(
+		[0] => about
+	)
+	[page] => news
+	[parameters] => Object(
+		[article] => newyearnight
+	)
+)
+
+теперь, для http://0planeta-kmv.ru/about/news/newyearnight/
+[page] => Array(
+	[id] => 3
+	[name] => newyearnight
+	[type] => 
+	[template] => 
+	[parameters] => Array(
+	)
+	[parents] => Array(
+		[0] => about
+		[1] => news
+	)
+)
+
+теперь, для http://0planeta-kmv.ru/seance/astronomija/
+[page] => Array(
+	[id] => 3
+	[name] => seance
+	[type] => content
+	[template] => 
+	[parameters] => Array(
+	)
+	[parents] => Array(
+	)
+)
+
+$content: Object(
+    [page] => 
+    [all] => 
+    [name] => astronomija
+    [filter] => Array(
+	)
+    [this] => Array(
+		[id] => 0
+		[name] => astronomija
+		[type] => 
+		[self] => 
+		[parent] => Array(
+			[0] => seance
+		)
+		[ctime] => 1573643170
+		[mtime] => 1528443470
+		[data] => Array(
+			...
+		)
+	)
+)
+
+$template -> router -> page (если пустой, то считается 'home') --- $template -> page['name'] : thispage('is')
+$template -> router -> folders (array) --- $template -> page['parents'] : thispage('parents')
+$template -> router -> parameters --- $template -> page['parameters'] : thispage('parameters') / thispage('parameters', ...)
+$template -> router -> parameters -> page (страница) : content('page')
+
+$template -> router -> parameters -> article (название материала) --- $content -> name : thispage('contentname') > content('name')
+а проверка empty($template -> router -> parameters -> article) --- empty($content) / !set($content) - лучше, т.к. возвращает false с пустых объектов > content('name')
 
 А ЕЩЕ ЛУЧШЕ ПРОВЕРЯТЬ, КОНТЕНТ ЭТО ИЛИ НЕТ ФУНКЦИЕЙ thispage('content')
-
-$template -> router -> page --- $template -> page['name']
 
 $template -> url теперь не существует, все урлы хранятся в объекте $uri
 $template -> url --- $uri -> scheme . '://' . $uri -> host . $uri -> path -> base
