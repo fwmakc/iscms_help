@@ -1,0 +1,12 @@
+{
+	"settings" : {
+		"path" : "icons",
+		"original" : "logo.png",
+		
+		"resize" : null,
+		nocrop/crop/другое
+		
+		"update" : false,
+		"manifest" : false,
+		"browserconfig" : false
+	},
