@@ -433,6 +433,14 @@ dates - задает условия для вывода материалов, с
 	
 	эта группа задает классы элементов
 		
+		"parent" : "content_", // префикс или 'true' для вывода родителя в виде класса без префикса
+		"empty" : "content__empty",
+		"common" : "content__container",
+		"list" : "content__list",
+		"all" : "content__all",
+		"alone" : "content__alone",
+		"item" : "content__item"
+		
 		"navigation" : {
 		
 		эта подгруппа задает классы для кнопок навигации
